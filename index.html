@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Four in a Row: Past Tense Verbs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0eafb;
+    --bg-2: #e2d7f7;
+    --ink: #2b1a58;
+    --ink-soft: #5e4f8a;
+    --card: #ffffff;
+    --line: #cdbfee;
+    --accent: #5b3fa8;
+    --accent-ink: #ffffff;
+    --p1: #d93f4c;
+    --p2: #0e8f80;
+    --good: #14833f;
+    --good-bg: #dff5e6;
+    --bad: #b3261e;
+    --bad-bg: #fde4e1;
+    --dead: #ddd5ee;
+    --shadow: 0 6px 0 rgba(91, 63, 168, .18);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1233;
+      --bg-2: #281a4a;
+      --ink: #f1ebff;
+      --ink-soft: #b8a9e0;
+      --card: #2b1d52;
+      --line: #4a3a80;
+      --accent: #a98bf0;
+      --accent-ink: #1b1233;
+      --p1: #ff7480;
+      --p2: #3fd0bd;
+      --good: #6fe39a;
+      --good-bg: #17402a;
+      --bad: #ff9a92;
+      --bad-bg: #4a1f1c;
+      --dead: #3a2d63;
+      --shadow: 0 6px 0 rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1233;
+    --bg-2: #281a4a;
+    --ink: #f1ebff;
+    --ink-soft: #b8a9e0;
+    --card: #2b1d52;
+    --line: #4a3a80;
+    --accent: #a98bf0;
+    --accent-ink: #1b1233;
+    --p1: #ff7480;
+    --p2: #3fd0bd;
+    --good: #6fe39a;
+    --good-bg: #17402a;
+    --bad: #ff9a92;
+    --bad-bg: #4a1f1c;
+    --dead: #3a2d63;
+    --shadow: 0 6px 0 rgba(0, 0, 0, .35);
+  }
+
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hidden { display: none !important; }
+
+  .app { max-width: 880px; margin: 0 auto; padding: 18px 14px 40px; }
+
+  h1 { font-size: clamp(30px, 6vw, 48px); line-height: 1.05; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  h2 { font-size: clamp(22px, 4vw, 30px); margin: 0 0 8px; font-weight: 600; }
+
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    border: 3px solid var(--accent); border-radius: 16px;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 12px 22px; font-size: 20px;
+    box-shadow: var(--shadow);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(91, 63, 168, .18); }
+  button.ghost { background: transparent; color: var(--accent); box-shadow: none; }
+  button.small { font-size: 15px; padding: 6px 14px; border-radius: 12px; box-shadow: none; }
+  :focus-visible { outline: 4px solid var(--p2); outline-offset: 3px; }
+
+  /* ---------- Rules screen ---------- */
+  .hero { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
+  .title-board {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(280px, 70%);
+  }
+  .title-board span {
+    aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; color: #fff; font-size: 24px; background: var(--p1);
+    box-shadow: inset 0 -5px 0 rgba(0,0,0,.18);
+  }
+  .title-board span:nth-child(even) { background: var(--p2); }
+  .rules {
+    background: var(--card); border: 3px solid var(--line); border-radius: 24px;
+    padding: 20px 24px; width: 100%; box-shadow: var(--shadow);
+  }
+  .rules ol { margin: 8px 0 0; padding-left: 1.4em; }
+  .rules li { margin: 10px 0; font-size: clamp(18px, 2.6vw, 22px); }
+  .rules li b { color: var(--accent); }
+
+  /* ---------- Setup ---------- */
+  .setup-grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; width: 100%; }
+  @media (max-width: 560px) { .setup-grid { grid-template-columns: 1fr; } }
+  .player-field {
+    background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow);
+  }
+  .player-field label { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 22px; }
+  .chip {
+    width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    color: #fff; font-weight: 700; font-size: 20px; flex: none;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,.2);
+  }
+  .chip.p0 { background: var(--p1); } .chip.p1 { background: var(--p2); }
+  input[type="text"] {
+    font: inherit; font-size: 24px; font-weight: 500; width: 100%;
+    padding: 10px 14px; border-radius: 14px; border: 3px solid var(--line);
+    background: var(--bg); color: var(--ink);
+  }
+  input[type="text"]:focus { border-color: var(--accent); outline: none; }
+  .mode-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .mode-pick input { position: absolute; opacity: 0; pointer-events: none; }
+  .mode-pick label {
+    display: block; background: var(--card); border: 3px solid var(--line); border-radius: 20px;
+    padding: 14px 16px; cursor: pointer; font-weight: 600; font-size: 22px;
+  }
+  .mode-pick label small { display: block; font-weight: 400; font-size: 15px; color: var(--ink-soft); }
+  .mode-pick input:checked + label { border-color: var(--accent); background: var(--bg-2); }
+  .mode-pick input:focus-visible + label { outline: 4px solid var(--p2); outline-offset: 3px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  /* ---------- Game ---------- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .score {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 3px solid var(--line); border-radius: 18px; padding: 8px 12px;
+    transition: border-color .15s, transform .15s;
+    min-width: 0;
+  }
+  .score .nm { font-weight: 600; font-size: clamp(17px, 3vw, 24px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score .ct { margin-left: auto; font-size: 15px; color: var(--ink-soft); white-space: nowrap; }
+  .score.active.p0 { border-color: var(--p1); transform: translateY(-2px); }
+  .score.active.p1 { border-color: var(--p2); transform: translateY(-2px); }
+  .prompt {
+    text-align: center; font-size: clamp(19px, 3.4vw, 26px); font-weight: 600; margin: 0 0 14px;
+    min-height: 1.4em;
+  }
+  .prompt .who { padding: 2px 12px; border-radius: 999px; color: #fff; }
+  .prompt .who.p0 { background: var(--p1); } .prompt .who.p1 { background: var(--p2); }
+  :root:not([data-theme="light"]) .prompt .who { color: #1b1233; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .prompt .who { color: #fff; } }
+
+  .board {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, 1vw, 8px);
+    background: var(--bg-2); padding: clamp(6px, 1.4vw, 12px); border-radius: 24px;
+    border: 3px solid var(--line);
+  }
+  .tile {
+    position: relative; aspect-ratio: 1; padding: 2px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+    font-size: clamp(11px, 2.9vw, 24px); font-weight: 600; line-height: 1.1;
+    background: var(--card); color: var(--ink);
+    border: 3px solid var(--line); border-radius: clamp(10px, 2vw, 16px);
+    box-shadow: 0 4px 0 var(--line);
+    overflow: hidden; word-break: break-word;
+  }
+  .tile:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .tile:hover:not(:disabled) { border-color: var(--accent); }
+  .tile .past { font-size: .72em; font-weight: 500; opacity: .95; }
+  .tile.p0, .tile.p1 { color: #fff; animation: drop .45s cubic-bezier(.3, 1.6, .5, 1); box-shadow: inset 0 -5px 0 rgba(0,0,0,.2); }
+  .tile.p0 { background: var(--p1); border-color: var(--p1); }
+  .tile.p1 { background: var(--p2); border-color: var(--p2); }
+  :root:not([data-theme="light"]) .tile.p0, :root:not([data-theme="light"]) .tile.p1 { color: #1b1233; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tile.p0, :root:not([data-theme="dark"]) .tile.p1 { color: #fff; } }
+  :root[data-theme="dark"] .tile.p0, :root[data-theme="dark"] .tile.p1 { color: #1b1233; }
+  .tile.dead {
+    background: var(--dead); border-color: var(--dead); box-shadow: none; color: var(--ink-soft);
+    text-decoration: line-through; text-decoration-thickness: 3px; animation: shake .4s;
+  }
+  .tile.dead::after {
+    content: "✗"; position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 2.6em; color: var(--bad); opacity: .75; text-decoration: none; font-weight: 700;
+  }
+  .tile.win { animation: pulse .7s ease-in-out infinite alternate; outline: 4px solid #ffd23f; outline-offset: -2px; z-index: 1; }
+  .tile:disabled { cursor: default; }
+  .tile:disabled:not(.p0):not(.p1):not(.dead) { opacity: .75; }
+
+  @keyframes drop { from { transform: translateY(-30px) scale(.8); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes shake { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(30, 15, 70, .6); z-index: 20;
+    display: grid; place-items: center; padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal {
+    background: var(--card); border: 4px solid var(--accent); border-radius: 28px;
+    padding: 24px; width: min(520px, 100%); max-height: 100%; overflow: auto;
+    text-align: center; box-shadow: 0 12px 0 rgba(0,0,0,.2);
+    animation: pop .25s cubic-bezier(.3, 1.5, .5, 1);
+    display: flex; flex-direction: column; gap: 14px; align-items: center;
+  }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal .who { font-weight: 600; font-size: 22px; padding: 2px 16px; border-radius: 999px; color: #fff; }
+  .modal .who.p0 { background: var(--p1); } .modal .who.p1 { background: var(--p2); }
+  :root[data-theme="dark"] .modal .who { color: #1b1233; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .modal .who { color: #1b1233; } }
+  .modal .ask { margin: 0; font-size: 20px; color: var(--ink-soft); }
+  .verb { font-size: clamp(44px, 12vw, 72px); font-weight: 700; line-height: 1; }
+  .modal input[type="text"] { text-align: center; font-size: 34px; }
+  .modal input.shake { animation: shake .4s; border-color: var(--bad); }
+  .modal .row { justify-content: center; }
+  .verdict {
+    width: 100%; border-radius: 20px; padding: 14px; font-weight: 700; font-size: 30px;
+  }
+  .verdict.good { background: var(--good-bg); color: var(--good); }
+  .verdict.bad { background: var(--bad-bg); color: var(--bad); }
+  .verdict small { display: block; font-weight: 500; font-size: 17px; color: var(--ink); margin-top: 2px; }
+  .answer { font-size: clamp(40px, 11vw, 64px); font-weight: 700; letter-spacing: .02em; min-height: 1.1em; }
+  .answer span { display: inline-block; opacity: 0; animation: letter .35s forwards; }
+  @keyframes letter { from { transform: translateY(14px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+  .wrote { font-size: 18px; color: var(--ink-soft); margin: 0; }
+  .wrote s { text-decoration-thickness: 3px; text-decoration-color: var(--bad); }
+  .trophy { font-size: 72px; line-height: 1; }
+
+  .confetti { position: fixed; top: -20px; width: 12px; height: 16px; z-index: 30; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition: none !important; }
+    .answer span { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 1. RULES -->
+  <section id="rules" class="hero">
+    <div class="title-board" aria-hidden="true"><span>E</span><span>D</span><span>E</span><span>D</span></div>
+    <h1>Four in a Row!</h1>
+    <div class="rules">
+      <h2>How to play</h2>
+      <ol>
+        <li>Players take turns. <b>Pick a word</b> on the board.</li>
+        <li><b>Type the past tense</b> of that word, then press Check.</li>
+        <li>The answer is revealed. If you are <b>correct</b>, your counter goes on the word.</li>
+        <li>If you are <b>wrong</b>, the word is <b>crossed out</b> and nobody can use it.</li>
+        <li>The first player to get <b>4 counters in a straight line</b> wins. Rows, columns and diagonals all count!</li>
+      </ol>
+    </div>
+    <button id="toSetup">Let's play</button>
+  </section>
+
+  <!-- 2. SETUP -->
+  <section id="setup" class="stack hidden">
+    <h1>Who is playing?</h1>
+    <div class="setup-grid">
+      <div class="player-field">
+        <label for="n0"><span class="chip p0">1</span> Player 1</label>
+        <input type="text" id="n0" maxlength="14" autocomplete="off" placeholder="Type name">
+      </div>
+      <div class="player-field">
+        <label for="n1"><span class="chip p1">2</span> Player 2</label>
+        <input type="text" id="n1" maxlength="14" autocomplete="off" placeholder="Type name">
+      </div>
+    </div>
+    <div>
+      <h2>Choose the verbs</h2>
+      <div class="mode-pick">
+        <div><input type="radio" name="mode" id="m-reg" value="regular" checked><label for="m-reg">Regular verbs<small>add -ed, -d, -ied...</small></label></div>
+        <div><input type="radio" name="mode" id="m-irr" value="irregular"><label for="m-irr">Irregular verbs<small>go → went</small></label></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="ghost" id="backRules">Back</button>
+      <button id="startGame">Start game</button>
+    </div>
+  </section>
+
+  <!-- 3. GAME -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <h2 id="gameTitle" style="margin:0">Four in a Row</h2>
+      <button class="ghost small" id="newGame">New game</button>
+    </div>
+    <div class="scores">
+      <div class="score p0" id="s0"><span class="chip p0" id="c0"></span><span class="nm" id="nm0"></span><span class="ct" id="ct0"></span></div>
+      <div class="score p1" id="s1"><span class="chip p1" id="c1"></span><span class="nm" id="nm1"></span><span class="ct" id="ct1"></span></div>
+    </div>
+    <p class="prompt" id="prompt" aria-live="polite"></p>
+    <div class="board" id="board"></div>
+  </section>
+</div>
+
+<div class="overlay hidden" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var VERBS = {
+    regular: [
+      ["ask","asked"],["need","needed"],["want","wanted"],["dance","danced"],["start","started"],
+      ["use","used"],["jump","jumped"],["open","opened"],["argue","argued"],["nod","nodded"],
+      ["yawn","yawned"],["enjoy","enjoyed"],["stop","stopped"],["visit","visited"],["pull","pulled"],
+      ["close","closed"],["brush","brushed"],["listen","listened"],["talk","talked"],["fry","fried"],
+      ["study","studied"],["guess","guessed"],["raise","raised"],["pat","patted"],["bake","baked"],
+      ["like","liked"],["zip","zipped"],["fetch","fetched"],["queue","queued"],["help","helped"],
+      ["joke","joked"],["add","added"],["call","called"],["move","moved"],["wave","waved"],
+      ["reply","replied"],["erase","erased"],["hug","hugged"],["try","tried"],["place","placed"],
+      ["clap","clapped"],["miss","missed"],["kick","kicked"],["rub","rubbed"],["watch","watched"],
+      ["hope","hoped"],["sneeze","sneezed"],["tap","tapped"],["cry","cried"]
+    ],
+    irregular: [
+      ["bring","brought"],["come","came"],["sing","sang"],["eat","ate"],["give","gave"],
+      ["keep","kept"],["leave","left"],["fly","flew"],["break","broke"],["choose","chose"],
+      ["swim","swam"],["teach","taught"],["go","went"],["know","knew"],["make","made"],
+      ["fall","fell"],["begin","began"],["catch","caught"],["stand","stood"],["take","took"],
+      ["grow","grew"],["run","ran"],["meet","met"],["feed","fed"],["bite","bit"],
+      ["drive","drove"],["sleep","slept"],["tell","told"],["write","wrote"],["say","said"],
+      ["think","thought"],["find","found"],["build","built"],["drink","drank"],["speak","spoke"],
+      ["have","had"],["hide","hid"],["see","saw"],["do","did"],["feel","felt"],
+      ["buy","bought"],["draw","drew"],["sit","sat"],["hold","held"],["pay","paid"],
+      ["send","sent"],["ride","rode"],["get","got"],["blow","blew"]
+    ]
+  };
+  var SIZE = 7, NEED = 4;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var st = { names: ["", ""], mode: "regular", tiles: [], turn: 0, over: false, win: [], sel: -1 };
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+  function show(id) { ["rules", "setup", "game"].forEach(function (s) { $(s).classList.toggle("hidden", s !== id); }); window.scrollTo(0, 0); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function initial(i) { return esc((st.names[i] || "?").charAt(0).toUpperCase()); }
+
+  /* ---------- Navigation ---------- */
+  $("toSetup").onclick = function () { show("setup"); $("n0").focus(); };
+  $("backRules").onclick = function () { show("rules"); };
+  $("startGame").onclick = function () {
+    st.names[0] = $("n0").value.trim() || "Player 1";
+    st.names[1] = $("n1").value.trim() || "Player 2";
+    st.mode = document.querySelector('input[name="mode"]:checked').value;
+    newBoard();
+    show("game");
+  };
+  ["n0", "n1"].forEach(function (id, i) {
+    $(id).addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { if (i === 0) $("n1").focus(); else $("startGame").click(); }
+    });
+  });
+  $("newGame").onclick = function () {
+    openModal(
+      '<h2>Start a new game?</h2><p class="ask">The current board will be cleared.</p>' +
+      '<div class="row"><button class="ghost" id="mCancel">Keep playing</button><button id="mOk">New game</button></div>'
+    );
+    $("mCancel").onclick = closeModal;
+    $("mOk").onclick = function () { closeModal(); show("setup"); };
+  };
+
+  /* ---------- Game ---------- */
+  function newBoard() {
+    st.tiles = shuffle(VERBS[st.mode]).map(function (v) { return { base: v[0], past: v[1], s: "open" }; });
+    st.turn = 0; st.over = false; st.win = []; st.sel = -1;
+    $("gameTitle").textContent = st.mode === "regular" ? "Regular verbs" : "Irregular verbs";
+    renderAll();
+  }
+
+  function renderAll() {
+    for (var i = 0; i < 2; i++) {
+      $("nm" + i).textContent = st.names[i];
+      $("c" + i).textContent = st.names[i].charAt(0).toUpperCase();
+      var n = st.tiles.filter(function (t) { return t.s === "p" + i; }).length;
+      $("ct" + i).textContent = n + (n === 1 ? " counter" : " counters");
+      $("s" + i).classList.toggle("active", !st.over && st.turn === i);
+    }
+    var p = $("prompt");
+    if (st.over) { p.textContent = ""; }
+    else { p.innerHTML = '<span class="who p' + st.turn + '">' + esc(st.names[st.turn]) + '</span>, pick a word!'; }
+
+    var b = $("board"); b.innerHTML = "";
+    st.tiles.forEach(function (t, idx) {
+      var btn = document.createElement("button");
+      btn.className = "tile" + (t.s !== "open" ? " " + t.s : "") + (st.win.indexOf(idx) > -1 ? " win" : "");
+      btn.type = "button";
+      var main = document.createElement("span"); main.textContent = t.base; btn.appendChild(main);
+      if (t.s === "p0" || t.s === "p1") {
+        var past = document.createElement("span"); past.className = "past"; past.textContent = t.past; btn.appendChild(past);
+      }
+      btn.disabled = t.s !== "open" || st.over;
+      if (t.s === "dead") btn.setAttribute("aria-label", t.base + ", crossed out");
+      btn.onclick = function () { pick(idx); };
+      b.appendChild(btn);
+    });
+  }
+
+  function openModal(html) { $("modal").innerHTML = html; $("overlay").classList.remove("hidden"); }
+  function closeModal() { $("overlay").classList.add("hidden"); $("modal").innerHTML = ""; }
+
+  function pick(idx) {
+    if (st.over || st.tiles[idx].s !== "open") return;
+    st.sel = idx;
+    var t = st.tiles[idx], who = st.turn;
+    openModal(
+      '<span class="who p' + who + '">' + esc(st.names[who]) + '</span>' +
+      '<p class="ask">Type the past tense of</p>' +
+      '<div class="verb">' + esc(t.base) + '</div>' +
+      '<input type="text" id="ans" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Past tense of ' + esc(t.base) + '">' +
+      '<div class="row"><button class="ghost" id="back">Pick another</button><button id="check">Check</button></div>'
+    );
+    var inp = $("ans"); inp.focus();
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") $("check").click(); });
+    $("back").onclick = function () { st.sel = -1; closeModal(); };
+    $("check").onclick = function () {
+      var v = inp.value.trim().toLowerCase();
+      if (!v) { inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake"); inp.focus(); return; }
+      reveal(v);
+    };
+  }
+
+  function reveal(typed) {
+    var t = st.tiles[st.sel], who = st.turn;
+    var ok = typed === t.past;
+    var letters = t.past.split("").map(function (c, i) {
+      return '<span style="animation-delay:' + (0.25 + i * 0.12) + 's">' + esc(c) + '</span>';
+    }).join("");
+    var after = 0.25 + t.past.length * 0.12 + 0.2;
+    var winCheck = ok ? wouldWin(st.sel, who) : false;
+    var nextLabel = winCheck ? "See who won!" : "Next: " + esc(st.names[1 - who]) + "'s turn";
+
+    openModal(
+      '<span class="who p' + who + '">' + esc(st.names[who]) + '</span>' +
+      '<div class="verb" style="font-size:32px;font-weight:600">' + esc(t.base) + ' →</div>' +
+      '<div class="answer" aria-label="' + esc(t.past) + '">' + letters + '</div>' +
+      '<p class="wrote">You wrote: ' + (ok ? '<b>' + esc(typed) + '</b>' : '<s>' + esc(typed) + '</s>') + '</p>' +
+      '<div class="verdict ' + (ok ? "good" : "bad") + '" id="verdict" style="opacity:0;transition:opacity .3s ' + after + 's">' +
+        (ok ? "✓ Correct!<small>Your counter goes on the board.</small>" : "✗ Not this time<small>The word is crossed out.</small>") +
+      '</div>' +
+      '<button id="next" style="opacity:0;transition:opacity .3s ' + (after + 0.3) + 's" disabled>' + nextLabel + '</button>'
+    );
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var v = $("verdict"), n = $("next");
+      if (v) v.style.opacity = 1;
+      if (n) { n.style.opacity = 1; setTimeout(function () { n.disabled = false; n.focus(); }, (after + 0.3) * 1000); }
+    }); });
+    $("next").onclick = function () { finishTurn(ok); };
+  }
+
+  function lineFrom(idx, player) {
+    var key = "p" + player, r0 = Math.floor(idx / SIZE), c0 = idx % SIZE;
+    var dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (var d = 0; d < dirs.length; d++) {
+      var dr = dirs[d][0], dc = dirs[d][1], cells = [idx];
+      [1, -1].forEach(function (sign) {
+        var r = r0 + dr * sign, c = c0 + dc * sign;
+        while (r >= 0 && r < SIZE && c >= 0 && c < SIZE && st.tiles[r * SIZE + c].s === key) {
+          cells.push(r * SIZE + c); r += dr * sign; c += dc * sign;
+        }
+      });
+      if (cells.length >= NEED) return cells;
+    }
+    return null;
+  }
+  function wouldWin(idx, player) {
+    var prev = st.tiles[idx].s; st.tiles[idx].s = "p" + player;
+    var res = lineFrom(idx, player); st.tiles[idx].s = prev; return !!res;
+  }
+
+  function finishTurn(ok) {
+    var who = st.turn, idx = st.sel;
+    st.tiles[idx].s = ok ? "p" + who : "dead";
+    st.sel = -1;
+    var line = ok ? lineFrom(idx, who) : null;
+    closeModal();
+    if (line) { st.over = true; st.win = line; renderAll(); endModal(who); return; }
+    if (!st.tiles.some(function (t) { return t.s === "open"; })) { st.over = true; renderAll(); endModal(-1); return; }
+    st.turn = 1 - who;
+    renderAll();
+  }
+
+  function endModal(winner) {
+    var html;
+    if (winner >= 0) {
+      html = '<div class="trophy">🏆</div><h2>' + esc(st.names[winner]) + ' wins!</h2><p class="ask">Four in a row!</p>';
+      confetti();
+    } else {
+      html = '<div class="trophy">🤝</div><h2>It\'s a draw!</h2><p class="ask">No more words left on the board.</p>';
+    }
+    html += '<div class="row"><button class="ghost" id="viewB">Look at the board</button><button id="again">Play again</button></div>';
+    openModal(html);
+    $("viewB").onclick = function () {
+      closeModal();
+      $("prompt").innerHTML = '<button class="small" id="again2">Play again</button>';
+      $("again2").onclick = newBoard;
+    };
+    $("again").onclick = function () { closeModal(); newBoard(); };
+    $("again").focus();
+  }
+
+  function confetti() {
+    var colors = ["#d93f4c", "#0e8f80", "#ffd23f", "#5b3fa8", "#ff8fb1", "#4aa3ff"];
+    for (var i = 0; i < 70; i++) {
+      var el = document.createElement("div"); el.className = "confetti";
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.background = colors[i % colors.length];
+      el.style.animationDuration = (2.2 + Math.random() * 2.2) + "s";
+      el.style.animationDelay = (Math.random() * 0.8) + "s";
+      document.body.appendChild(el);
+      setTimeout((function (e) { return function () { e.remove(); }; })(el), 6000);
+    }
+  }
+})();
+</script>
+</body>
+</html>
